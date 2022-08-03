@@ -744,14 +744,18 @@ inline void Opm::ExecuteCmndCore( unsigned char regno, unsigned char data ) {
 		ch = data & 7;
 		for (s = 0, bit = 8; s < 4; ++s, bit += bit) {
 			if (data & bit) {
+				//KON
 				if ((OpmChMask & bit) == 0)
 					ymfm_opm_device.SetReg(regno, data);
 			}
 			else {
-				op[ch][s].KeyOFF(0);
+				//KOFF
+				ymfm_opm_device.SetReg(regno, data);
 			}
 		}
 		break;
+	default:
+		ymfm_opm_device.SetReg(regno, data);
 	}
 
 	switch (regno) {
