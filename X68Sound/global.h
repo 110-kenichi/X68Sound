@@ -43,6 +43,7 @@ int	Samprate = 44100;
 int	WaveOutSamp = 44100;
 int OpmWait = 240;	// 24.0ƒÊ‚“
 int	OpmRate = 62500;	// “ü—ÍƒNƒƒbƒN€64
+int OpmClock = 4000000;
 
 int	STEPTBL[11*12*64];
 //int	STEPTBL3[11*12*64];

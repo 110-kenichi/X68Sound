@@ -1,3 +1,5 @@
+#include "ymfm\ymfm_opm_device.h"
+
 #define	CMNDBUFSIZE	65535
 
 //#define	RES	(20)
@@ -31,7 +33,7 @@ class Opm {
 	int	CmndReadIdx,CmndWriteIdx;
 	int CmndRate;
 
-	
+	ymfm::ymfm_opm_device ymfm_opm_device;
 	
 	//	short	PcmBuf[PCMBUFSIZE][2];
 	short	(*PcmBuf)[2];
@@ -514,6 +516,9 @@ Opm::Opm(void) {
 		}
 	}
 #endif
+
+	ymfm_opm_device.Init(OpmClock, Samprate, FALSE);
+	ymfm_opm_device.Reset();
 }
 
 inline void Opm::MakeTable() {
@@ -731,6 +736,24 @@ inline void Opm::ExecuteCmnd() {
 }
 
 inline void Opm::ExecuteCmndCore( unsigned char regno, unsigned char data ) {
+
+	switch (regno) {
+	case 0x08:
+		// KON
+		int	ch, s, bit;
+		ch = data & 7;
+		for (s = 0, bit = 8; s < 4; ++s, bit += bit) {
+			if (data & bit) {
+				if ((OpmChMask & bit) == 0)
+					ymfm_opm_device.SetReg(regno, data);
+			}
+			else {
+				op[ch][s].KeyOFF(0);
+			}
+		}
+		break;
+	}
+
 	switch (regno) {
 	case 0x01:
 	// LFO RESET
@@ -1277,13 +1300,15 @@ inline void Opm::pcmset22(int ndata) {
 				InpOpm_prev[0] = InpOpm[0];
 				InpOpm_prev[1] = InpOpm[1];
 #else
-				InpOpm[0] = InpInpOpm[0];
-				InpOpm[1] = InpInpOpm[1];
+				//InpOpm[0] = InpInpOpm[0];
+				//InpOpm[1] = InpInpOpm[1];
+
+				ymfm_opm_device.Generate(InpOpm);
 #endif
 
 			// ‘S‘Ì‚Ì‰¹—Ê‚ð’²®
-			OutOpm[0] = (InpOpm[0]*TotalVolume) >> 8;
-			OutOpm[1] = (InpOpm[1]*TotalVolume) >> 8;
+			OutOpm[0] = (InpOpm[0]*TotalVolume) >> 3;
+			OutOpm[1] = (InpOpm[1]*TotalVolume) >> 3;
 
 			Out[0] -= OutOpm[0]>>(5);	// -4096 ` +4096
 			Out[1] -= OutOpm[1]>>(5);
@@ -1494,6 +1519,8 @@ inline int Opm::Start(int samprate, int opmflag, int adpcmflag,
 	}
 	WaveOutSamp = samprate;
 
+	ymfm_opm_device.Init(OpmClock, Samprate, FALSE);
+
 #ifdef ROMEO
 	if ( UseOpmFlag == 2 ) {
 		juliet_load();
@@ -1535,6 +1562,8 @@ inline int Opm::StartPcm(int samprate, int opmflag, int adpcmflag, int pcmbuf) {
 
 	PcmBufSize = 0xFFFFFFFF;
 
+	ymfm_opm_device.Init(OpmClock, Samprate, FALSE);
+
 	return WaveAndTimerStart();
 }
 
@@ -1559,6 +1588,9 @@ inline int Opm::SetSamprate(int samprate) {
 	ResetSamprate();
 
 	Dousa_mode = dousa_mode_bak;
+
+	ymfm_opm_device.Init(OpmClock, Samprate, FALSE);
+
 	return WaveAndTimerStart();
 }
 
@@ -1567,6 +1599,7 @@ inline int Opm::SetOpmClock(int clock) {
 	if (rate <= 0) {
 		return X68SNDERR_BADARG;
 	}
+	OpmClock = clock;
 	if (Dousa_mode == 0) {
 		OpmRate = rate;
 		return 0;
@@ -1581,6 +1614,9 @@ inline int Opm::SetOpmClock(int clock) {
 	ResetSamprate();
 
 	Dousa_mode = dousa_mode_bak;
+
+	ymfm_opm_device.Init(OpmClock, Samprate, FALSE);
+
 	return WaveAndTimerStart();
 }
 

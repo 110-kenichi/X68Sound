@@ -12,3 +12,9 @@
 # Backup files
 *.*~
 *.bak
+/X68Sound/Debug
+/X68Sound/Release
+/.vs
+/Debug
+/X68Sound/X68Sound.vcxproj.user
+/Release
