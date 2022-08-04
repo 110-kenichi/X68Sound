@@ -1311,8 +1311,8 @@ inline void Opm::pcmset22(int ndata) {
 #endif
 
 			// ‘S‘Ì‚Ì‰¹—Ê‚ð’²®
-			OutOpm[0] = (InpOpm[0]*TotalVolume) >> 3;
-			OutOpm[1] = (InpOpm[1]*TotalVolume) >> 3;
+			OutOpm[0] = (InpOpm[0]*TotalVolume) >> 4;
+			OutOpm[1] = (InpOpm[1]*TotalVolume) >> 4;
 
 			Out[0] -= OutOpm[0]>>(5);	// -4096 ` +4096
 			Out[1] -= OutOpm[1]>>(5);
